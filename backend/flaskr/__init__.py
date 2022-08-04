@@ -1,4 +1,5 @@
 import os
+import resource
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -8,10 +9,19 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
+
+    cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
+    @app.route("/questions", methods=['POST'])
+    def sayHi():
+        query_params = request.args
+        print(query_params)
+        return 'Successful'
 
     """
     @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -26,7 +36,6 @@ def create_app(test_config=None):
     Create an endpoint to handle GET requests
     for all available categories.
     """
-
 
     """
     @TODO:
@@ -99,4 +108,3 @@ def create_app(test_config=None):
     """
 
     return app
-
