@@ -21,27 +21,25 @@ class QuestionView extends Component {
   }
 
   getQuestions = () => {
-    $.ajax({
-      url: `/questions?page=${this.state.page}`, //TODO: update request URL
-      type: 'GET',
-      success: (result) => {
-        this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          categories: result.categories,
-          currentCategory: result.current_category,
-        });
-        return;
-      },
-      error: (error) => {
-        alert('Unable to load questions. Please try your request again');
-        return;
-      },
-    });
-  };
+    fetch(`/questions?page=${this.state.page}`, {
+      method: 'GET',
+      headers: {
+        'Content-type': 'application/json'
+      }
+    })
+    .then((response) => response.json())
+    .then((data) => this.setState({
+      questions :data.questions,
+      totalQuestions: data.totalQuestions,
+      categories: data.categories,
+      currentCategory: data.currentCategory
+    })).catch((err) =>  
+      alert('Unable to load questions. Please try your request again')
+    )
+  }
 
   selectPage(num) {
-    this.setState({ page: num }, () => this.getQuestions());
+    this.setState({ page: num }, () => {this.state.currentCategory ?  this.getByCategory(this.state.currentCategory) : this.getQuestions()});
   }
 
   createPagination() {
@@ -65,7 +63,7 @@ class QuestionView extends Component {
 
   getByCategory = (id) => {
     $.ajax({
-      url: `/categories/${id}/questions`, //TODO: update request URL
+      url: `/categories/${id}/questions?page=${this.state.page}`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
         this.setState({
@@ -84,11 +82,12 @@ class QuestionView extends Component {
 
   submitSearch = (searchTerm) => {
     $.ajax({
-      url: `/questions`, //TODO: update request URL
+      //Fix later
+      url: `/questions/term?category=${this.state.currentCategory}`, //TODO: update request URL
       type: 'POST',
       dataType: 'json',
       contentType: 'application/json',
-      data: JSON.stringify({ searchTerm: searchTerm }),
+      data: JSON.stringify({ 'searchTerm': searchTerm}), 
       xhrFields: {
         withCredentials: true,
       },
@@ -154,7 +153,7 @@ class QuestionView extends Component {
               </li>
             ))}
           </ul>
-          <Search submitSearch={this.submitSearch} />
+          <Search submitSearch={this.submitSearch}/>
         </div>
         <div className='questions-list'>
           <h2>Questions</h2>

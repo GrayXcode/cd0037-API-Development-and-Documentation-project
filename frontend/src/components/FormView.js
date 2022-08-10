@@ -31,31 +31,51 @@ class FormView extends Component {
 
   submitQuestion = (event) => {
     event.preventDefault();
-    $.ajax({
-      url: '/questions', //TODO: update request URL
-      type: 'POST',
-      dataType: 'json',
-      contentType: 'application/json',
-      data: JSON.stringify({
+    fetch('/questions', {
+      method: 'POST',
+      body: JSON.stringify({
         question: this.state.question,
         answer: this.state.answer,
         difficulty: this.state.difficulty,
         category: this.state.category,
       }),
-      xhrFields: {
-        withCredentials: true,
-      },
-      crossDomain: true,
-      success: (result) => {
-        document.getElementById('add-question-form').reset();
-        return;
-      },
-      error: (error) => {
-        alert('Unable to add question. Please try your request again');
-        return;
-      },
-    });
-  };
+      headers: {
+        'Content-type': 'application/json'
+      }
+    }).then(function() {
+      document.getElementById('add-question-form').reset();
+    }).catch((err) => {
+      alert('Unable to add question. Please try your request again');
+    })
+  }
+
+  // submitQuestion = (event) => {
+  //   event.preventDefault();
+  //   $.ajax({
+  //     url: '/questions', //TODO: update request URL
+  //     type: 'POST',
+  //     dataType: 'json',
+  //     contentType: 'application/json',
+  //     data: JSON.stringify({
+  //       question: this.state.question,
+  //       answer: this.state.answer,
+  //       difficulty: this.state.difficulty,
+  //       category: this.state.category,
+  //     }),
+  //     xhrFields: {
+  //       withCredentials: true,
+  //     },
+  //     crossDomain: true,
+  //     success: (result) => {
+  //       document.getElementById('add-question-form').reset();
+  //       return;
+  //     },
+  //     error: (error) => {
+  //       alert('Unable to add question. Please try your request again');
+  //       return;
+  //     },
+  //   });
+  // };
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });

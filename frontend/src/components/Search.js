@@ -3,8 +3,10 @@ import React, { Component } from 'react';
 class Search extends Component {
   state = {
     query: '',
+    currentCategory: this.props.currentCategory
   };
 
+  
   getInfo = (event) => {
     event.preventDefault();
     this.props.submitSearch(this.state.query);
