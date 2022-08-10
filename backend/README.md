@@ -1,104 +1,315 @@
-# Backend - Trivia API
+# Getting Started
 
-## Setting up the Backend
+  Trivia app is an app where you could **post question**, **delete question**, **search for question** and also **get questions** based on the available categories.
 
-### Install Dependencies
+  ### **Base** **url** 
+  *The frontend is hosted at http://localhost:3000, and the backend at http://localhost:5000/*
 
-1. **Python 3.7** - Follow instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
+  ## Guideline 
+    You are advised to stick to the PEP18-style
 
-2. **Virtual Environment** - We recommend working within a virtual environment whenever using Python for projects. This keeps your dependencies for each project separate and organized. Instructions for setting up a virual environment for your platform can be found in the [python docs](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
+  ## Prerequisite & Installations
+  ## Backend
+    Note: Make sure you are in the backend folder of the current project.
+   You are to install the dependencies in the requirements.txt within the **/backend** directory of the current project using:
 
-3. **PIP Dependencies** - Once your virtual environment is setup and running, install the required dependencies by navigating to the `/backend` directory and running:
+    $ pip3 install -r > requirements.txt
 
-```bash
-pip install -r requirements.txt
+You would need to setup up your virtual environment inorder to maintain the organization of the project and dependencies.
+
+  ### Installing Virtual Environment
+    For Linux / Unix Users
+    $ python3 -m venv venv
+    $ source venv/bin/activate
+
+  Before you start the server make sure your database is already created,
+    
+    $ createdb trivia
+    $ psql trivia < trivia.psql # Populates the table 
+
+  ### To start the Server
+    $ export FLASK_APP=flaskr
+    $ export FLASK_ENV=development # for server reload
+
+    # incase FLASK_ENV displays an error use FLASK_DEBUG=True
+
+    $ flask run
+
+## Frontend 
+    Note: Make sure you are in the frontend directory of the current project.
+
+  ### Installation
+    $ npm install # To install all dependencies
+    $ npm start 
+
+  The **frontend** is hosted at http://localhost:3000 and connected to the **backend** by proxy, at http://localhost:5000/
+
+
+## Test
+    Note: You are required to be in the backend directory of the current project 
+
+You have to create a test database so as not to hamper production or the development database
+    
+    $ createdb trivia_test
+    $ psql trivia_test < trivia.psql # Populates the table 
+
+# ERROR HANDLING
+  Errors are returned in the form of json, including their success, error type and their error message.
+
+Sample Response
+
+    {
+      'success': False,
+      'error': 404,
+      'message': 'Page not found'
+    }
+
+Error covered in this project are:
+
+1. **404** : Page not found
+2. **400** : Bad Request
+3. **500** : Internal Server Error
+4. **422** : Unprocessable entity
+   
+
+# API REFEERENCES
+
+`GET /categories`
+
+  **General:**
+
+  - Fetches dictionary of categories, in which the keys are the **ids** and the values are the corresponding strings of the category
+  - **Request Argument :** None
+  - **Returns :** Key-value representation of id and string of each category
+
+*Sample Response*
+
+```json
+ {
+  "categories": {
+    '1': 'Science',
+    '2': 'Art',
+    '3': 'Geography,
+    '4': 'History',
+    '5': 'Entertainment',
+    '6': 'Sports'
+  }
+ }
 ```
 
-#### Key Pip Dependencies
+`GET /questions`
 
-- [Flask](http://flask.pocoo.org/) is a lightweight backend microservices framework. Flask is required to handle requests and responses.
+  **General:**
 
-- [SQLAlchemy](https://www.sqlalchemy.org/) is the Python SQL toolkit and ORM we'll use to handle the lightweight SQL database. You'll primarily work in `app.py`and can reference `models.py`.
+  - Fetches lists of questions
+  - **Request Argument :** page - Integer
+  - **Returns :** Paginated list of questions, total questions,  all category, current category,
 
-- [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension we'll use to handle cross-origin requests from our frontend server.
+*Sample Response*
 
-### Set up the Database
-
-With Postgres running, create a `trivia` database:
-
-```bash
-createbd trivia
+```json
+ {
+  "questions": [
+    {
+      'id': 1,
+      'question': 'Who is Christ',
+      'answer': 'He is God',
+      'difficulty': 3,
+      'category': 4,
+    }, {
+      'id': 2,
+      'question': 'Who is instructor Caryn',
+      'answer': 'The endowed damsel at udacity',
+      'difficulty': 1,
+      'category': 5,
+    }
+  ],
+  'totalQuestion': 15,
+  'category': {
+    '1': 'Science',
+    '2': 'Art',
+    '3': 'Geography,
+    '4': 'History',
+    '5': 'Entertainment',
+    '6': 'Sports'
+  },
+  'currentCategory': 3
+ }
 ```
 
-Populate the database using the `trivia.psql` file provided. From the `backend` folder in terminal run:
+`DELETE /questions/${question_id}`
 
-```bash
-psql trivia < trivia.psql
+  **General:**
+
+  - Fetches question for deletion based on variable question_id passed to the URI
+  - **Request Argument :** question_id - Integer
+  - **Returns :** A key-value of success with value of True
+
+*Sample Request*
+
+    curl -X DELETE http://localhost:5000/questions/5
+
+*Sample Response*
+
+```json
+ {
+  "success": True
+ }
 ```
 
-### Run the Server
+`POST /questions`
 
-From within the `./src` directory first ensure you are working using your created virtual environment.
+  **General:**
 
-To run the server, execute:
+  - Post request to add a new question
+  - **Request Argument :** None
+  - **Request Body :** 
+    ```json
+      {
+        'question': "What's Caryn's beauty rate?",
+        'answer': "8/10",
+        'category': 3,
+        'difficulty': 4
+      }
+    ```
+  - **Returns :** A dictionary showing success to be True
 
-```bash
-flask run --reload
-```
+*Sample Request*
 
-The `--reload` flag will detect file changes and restart the server automatically.
+    curl -X POST http://localhost:5000/question -d '{'question': "What's Caryn's beauty rate? ", 'answer': "8/10", 'category': 3, 'difficulty': 4}'
 
-## To Do Tasks
+*Sample Response*
 
-These are the files you'd want to edit in the backend:
+    {
+      'success': True
+    }
 
-1. `backend/flaskr/__init__.py`
-2. `backend/test_flaskr.py`
 
-One note before you delve into your tasks: for each endpoint, you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior.
+`POST /questions/term`
 
-1. Use Flask-CORS to enable cross-domain requests and set response headers.
-2. Create an endpoint to handle `GET` requests for questions, including pagination (every 10 questions). This endpoint should return a list of questions, number of total questions, current category, categories.
-3. Create an endpoint to handle `GET` requests for all available categories.
-4. Create an endpoint to `DELETE` a question using a question `ID`.
-5. Create an endpoint to `POST` a new question, which will require the question and answer text, category, and difficulty score.
-6. Create a `POST` endpoint to get questions based on category.
-7. Create a `POST` endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question.
-8. Create a `POST` endpoint to get questions to play the quiz. This endpoint should take a category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.
-9. Create error handlers for all expected errors including 400, 404, 422, and 500.
+  **General:**
 
-## Documenting your Endpoints
+  - Post a request with a search term
+  - **Request Argument :** searchTerm - String
+  - **Request Body :** 
+    ```json
+      {
+        'searchTerm': 'clay'
+      }
+    ```
+  - **Returns :** matched questions, number of total questions and current category
 
-You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
+*Sample Request*
 
-### Documentation Example
+    curl -X POST http://localhost:5000/questions/term -d '{'searchTerm': 'clay'}'
 
-`GET '/api/v1.0/categories'`
-
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
-- Request Arguments: None
-- Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
+*Sample Response*
 
 ```json
 {
-  "1": "Science",
-  "2": "Art",
-  "3": "Geography",
-  "4": "History",
-  "5": "Entertainment",
-  "6": "Sports"
+'questions': [
+    {
+      'question': 'Who is cassius clay',
+      'answer': 'Muhammed Ali',
+      'category': 3,
+      'difficulty': 2
+    },
+    {
+      'question': 'Is clay a kind of Soil',
+      'answer': 'Yes',
+      'category': 3,
+      'difficulty': 1
+   }
+],
+  'total_questions': 2,
+  'current_Category': 3
 }
 ```
 
-## Testing
 
-Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.
 
-To deploy the tests, run
+`GET /categories/${category_id}/questions?page=${page_no}`
 
-```bash
-dropdb trivia_test
-createdb trivia_test
-psql trivia_test < trivia.psql
-python test_flaskr.py
+  **General:**
+
+  - Fetches lists of questions based on the id of the category
+  - **Request Argument :** category_id, page - Integer
+  - **Request Body :** None
+  - **Returns :** Questions that matches category id, current category, and number of total question.
+
+*Sample Request*
+
+    curl -X POST http://localhost:5000/categories/1/questions?page=1'
+
+*Sample Response*
+
+```json
+{
+'questions': [
+    {
+      'question': 'Who discovered the effect of gravity',
+      'answer': 'Sir Isaac Newton',
+      'category': 2,
+      'difficulty': 3
+    },
+    {
+      'question': 'Who coined the word Radioactivity',
+      'answer': 'Ernest Rutherford',
+      'category': 2,
+      'difficulty': 4
+   },
+   {
+      'question': 'What is the 15th element in the periodic table',
+      'answer': 'Phosphorus',
+      'category': 2,
+      'difficulty': 5
+   }
+],
+  'total_questions': 3,
+  'current_Category': 2
+}
 ```
+
+`POST \quizzed`
+
+  **General:**
+
+  - Fetches a question that has not been displayed/fetched, by checking them with the ids in previous questions list
+  - **Request Argument :** quiz_category - Integer, previous_question - list
+  - **Request Body :** 
+
+```json
+  {
+    'quiz_category': 2,
+    'previous_questions': [4, 5, 7]
+  }
+```
+
+  - **Returns :** A question dictionary and previous questions list
+
+*Sample Request*
+
+    curl -X POST http://localhost:5000/quizzes -d '{'quiz_category': 3, 'previous_questions': [4, 5, 10]}''
+
+*Sample Response*
+
+```json
+{
+'question': {
+  'id': 4, 
+  'question': 'Who is 2022 world athletic championship in 100m hurdle',
+  'answer': 'Tobi Amusan',
+  'category': '3',
+  'difficulty': 1
+},
+  'previousQuestions': [3, 4, 10]
+}
+```
+
+
+### Authors
+  *Holy Spirit*
+
+### Acknowledgement
+  **God**
+

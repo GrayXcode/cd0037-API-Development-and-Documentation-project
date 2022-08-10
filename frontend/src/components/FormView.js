@@ -31,7 +31,7 @@ class FormView extends Component {
 
   submitQuestion = (event) => {
     event.preventDefault();
-    fetch('/questions', {
+    fetch('/question', {
       method: 'POST',
       body: JSON.stringify({
         question: this.state.question,

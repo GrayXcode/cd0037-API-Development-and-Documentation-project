@@ -22,7 +22,8 @@ def create_app(test_config=None):
                 "origins": "*"}})
 
     """
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after 
+    completing the TODOs
     """
 
     @app.after_request
@@ -60,8 +61,10 @@ def create_app(test_config=None):
         question_collection = []
 
         for ques in questions:
-            question_collection.append({'question': ques.question, 'answer': ques.answer,
-                                        'difficulty': ques.difficulty, 'category': ques.category, 'id': ques.id})
+            question_collection.append({'question': ques.question, 'answer':
+                                        ques.answer, 'difficulty':
+                                        ques.difficulty, 'category':
+                                        ques.category, 'id': ques.id})
         return question_collection
 
     def splice(page, array):
@@ -105,8 +108,8 @@ def create_app(test_config=None):
 
     TEST: At this point, when you start the application
     you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions.
+    ten questions per page and pagination at the bottom of the screen for three
+    pages. Clicking on the page numbers should update the questions.
     """
 
     @ app.route('/questions/<int:question_id>', methods=['DELETE'])
@@ -114,7 +117,7 @@ def create_app(test_config=None):
         question = Question.query.filter(
             Question.id == question_id).one_or_none()
 
-        if not question:
+        if question is None:
             abort(422)
 
         Question.delete(question)
@@ -127,11 +130,12 @@ def create_app(test_config=None):
     @TODO:
     Create an endpoint to DELETE question using a question ID.
 
-    TEST: When you click the trash icon next to a question, the question will be removed.
-    This removal will persist in the database and when you refresh the page.
+    TEST: When you click the trash icon next to a question, the question will
+    be removed. This removal will persist in the database and when you refresh 
+    the page.
     """
 
-    @ app.route('/questions', methods=['POST'])
+    @ app.route('/question', methods=['POST'])
     def create_question():
 
         try:
@@ -140,7 +144,8 @@ def create_app(test_config=None):
             difficulty = request.get_json()['difficulty']
             category = request.get_json()['category']
             newQuestion = Question(
-                question=question, answer=answer, difficulty=difficulty, category=category)
+                question=question, answer=answer, difficulty=difficulty,
+                category=category)
 
             Question.insert(newQuestion)
 
@@ -165,11 +170,21 @@ def create_app(test_config=None):
     @ app.route('/questions/term', methods=['POST'])
     def get_search_question():
         searchTerm = request.get_json()['searchTerm']
-        currentCategory = request.args.get('category')
+        current_category = request.args.get('category')
         data = []
 
-        questions = db.session.query(Question).filter(
-            Question.category == currentCategory).filter(Question.question.ilike(f'%{searchTerm}%')).all()
+        # Convert js(null) to python (None)
+        # Still don't know why null !== None
+        if current_category == 'null':
+            current_category = None
+
+        if current_category is None:
+            questions = Question.query.filter(
+                Question.question.ilike(f'%{searchTerm}%')).all()
+        else:
+            questions = Question.query.filter(
+                Question.category == current_category).\
+                filter(Question.question.ilike(f'%{searchTerm}%')).all()
 
         if len(questions) == 0:
             abort(404)
@@ -179,7 +194,7 @@ def create_app(test_config=None):
         return jsonify({
             'questions': data,
             'total_questions': len(questions),
-            'current_category': currentCategory
+            'current_category': current_category
         })
 
     """
@@ -225,38 +240,44 @@ def create_app(test_config=None):
 
     @app.route('/quizzes', methods=['POST'])
     def get_quiz_questions():
-        category_id = request.get_json()['quiz_category']
-        past_questions = request.get_json()['previous_questions']
-        question_to_display = None;
+        try:
+            category_id = request.get_json()['quiz_category']['id']
+            past_questions = request.get_json()['previous_questions']
+            question_to_display = None
+            questions = None
 
-        if category_id == 0:
-            questions = db.session.query(
-                Question).order_by(func.random()).all()
-        else:
-            questions = db.session.query(Question).filter(
-                Question.category == category_id).order_by(func.random()).all()
+            if category_id == 0:
+                questions = Question.query.order_by(func.random()).all()
 
-        for question in questions:
-            if question.id in past_questions:
-                continue
             else:
-                past_questions.append(question.id)
-                question_to_display = question
-                break
+                questions = db.session.query(Question).filter(
+                    Question.category == category_id).order_by(func.random()).\
+                    all()
 
-        if question_to_display == None:
+            for question in questions:
+                if question.id in past_questions:
+                    continue
+                else:
+                    past_questions.append(question.id)
+                    question_to_display = question
+                    break
+
+            if question_to_display is None:
+                abort(404)
+
+            return jsonify({
+                'question': {
+                    'id': question_to_display.id,
+                    'question': question_to_display.question,
+                    'answer': question_to_display.answer,
+                    'difficulty': question_to_display.difficulty,
+                    'category': question_to_display.category
+                },
+                'previousQuestions': past_questions
+            })
+
+        except:
             abort(404)
-
-        return jsonify({
-            'question': {
-                'id': question_to_display.id,
-                'question': question_to_display.question,
-                'answer': question_to_display.answer,
-                'difficulty': question_to_display.difficulty,
-                'category': question_to_display.category
-            },
-            'previousQuestions': past_questions
-        })
 
     """
     @TODO:
